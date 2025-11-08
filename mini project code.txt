@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Fertilizer Recommendation System with Chatbot</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(120deg, #a8e063, #56ab2f);
+      height: 100vh;
+    }
+
+    /* Login/Signup Page */
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .form-box {
+      background: #fff;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      width: 380px;
+      text-align: center;
+    }
+    .form-box h2 {
+      color: #333;
+      margin-bottom: 0.5em;
+    }
+    .form-box input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1em;
+    }
+    .form-box button {
+      width: 95%;
+      padding: 10px;
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: 0.2s;
+    }
+    .form-box button:hover { background-color: #45a049; }
+    .form-box p { color: #555; font-size: 0.9em; }
+    .toggle { color: #007bff; cursor: pointer; text-decoration: underline; }
+    .toggle:hover { color: #0056b3; }
+
+    /* Main Page */
+    .hidden { display: none; }
+    header {
+      background: #276749;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 1rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+     /* 🔴 Updated logout button style */
+    .logout-btn {
+      position: absolute;
+      right: 20px;
+      top: 15px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .logout-btn:hover {
+      background: #b30000;
+    }
+
+
+    .container {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      padding: 20px;
+    }
+    .form-section, .chatbot-section {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      padding: 20px;
+      width: 45%;
+      min-width: 320px;
+    }
+    label { display: block; margin-top: 10px; font-weight: 600; }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      background-color: #276749;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover { background-color: #22543d; }
+    .result {
+      margin-top: 15px; padding: 10px;
+      background: #f0fff4; border: 1px solid #9ae6b4; border-radius: 10px;
+    }
+    .chatbot {
+      height: 400px; overflow-y: auto;
+      background: #f7fafc; border-radius: 10px; border: 1px solid #ccc; padding: 10px;
+    }
+    .message { margin: 10px 0; }
+    .user { text-align: right; color: #2b6cb0; }
+    .bot { text-align: left; color: #276749; }
+    .chat-input { display: flex; margin-top: 10px; }
+    .chat-input input {
+      flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #ccc;
+    }
+    .chat-input button { margin-left: 5px; }
+    .voice-btn {
+      background-color: #38a169; border: none; color: white;
+      padding: 8px 10px; border-radius: 10px; cursor: pointer;
+    }
+    .dataset { margin-top: 20px; font-size: 0.9em; color: #2f855a; }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN/SIGNUP PAGE -->
+  <div class="login-container" id="loginPage">
+    <div class="form-box">
+      <h2>Smart Fertilizer Recommendation System   with Chatbot</h2>
+      <p id="formTitle">Create your account to get personalized fertilizer recommendations.</p>
+      <input type="email" id="email" placeholder="Enter Gmail address" required>
+      <input type="tel" id="phone" placeholder="Enter phone number" required>
+      <button onclick="handleSubmit()">Sign Up</button>
+      <p id="message"></p>
+      <p>Already have an account? <span class="toggle" onclick="toggleForm()">Login here</span></p>
+    </div>
+  </div>
+
+  <!-- MAIN DASHBOARD PAGE -->
+  <div id="mainPage" class="hidden">
+    <header>
+      🌾 Smart Fertilizer Recommendation System (Multilingual Chatbot)
+       <!-- 🔴 Logout button now red square box -->
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+
+      <div class="container">
+      <div class="form-section">
+        <h2>Enter Soil & Weather Details</h2>
+        <label>Temperature (°C)</label><input type="number" id="temp">
+        <label>Humidity (%)</label><input type="number" id="humidity">
+        <label>Rainfall (mm)</label><input type="number" id="rainfall">
+        <label>pH (0 - ∞)</label><input type="number" id="ph" min="0" step="0.1">
+        <label>Nitrogen (N)</label><input type="number" id="n">
+        <label>Phosphorus (P)</label><input type="number" id="p">
+        <label>Potassium (K)</label><input type="number" id="k">
+        <label>Carbon (%)</label><input type="number" id="carbon" step="0.1">
+        <label>Soil Type</label>
+        <select id="soil">
+          <option value="clay">Clay</option>
+          <option value="sandy">Sandy</option>
+          <option value="loamy">Loamy</option>
+          <option value="black">Black Soil</option>
+          <option value="red">Red Soil</option>
+          <option value="alluvial">Alluvial Soil</option>
+          <option value="laterite">Laterite Soil</option>
+          <option value="peaty">Peaty Soil</option>
+        </select>
+        <button onclick="recommend()">Get Fertilizer Recommendation</button>
+        <div id="result" class="result"></div>
+        <div class="dataset" id="datasetInfo"></div>
+      </div>
+
+      <div class="chatbot-section">
+        <h2>Multilingual Voice Chatbot Assistant 🎤</h2>
+        <label>Select Language:</label>
+        <select id="langSelect">
+          <option value="en-IN">English</option>
+          <option value="hi-IN">Hindi</option>
+          <option value="kn-IN">Kannada</option>
+          <option value="ta-IN">Tamil</option>
+          <option value="te-IN">Telugu</option>
+        </select>
+        <div class="chatbot" id="chatbot"></div>
+        <div class="chat-input">
+          <input type="text" id="userInput" placeholder="Speak or type in selected language...">
+          <button class="voice-btn" onclick="startVoice()">🎙️</button>
+          <button onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isSignup = true;
+    let dataset = [];
+
+    // Toggle Signup/Login
+    function toggleForm() {
+      const title = document.getElementById("formTitle");
+      const button = document.querySelector(".form-box button");
+      const toggleText = document.querySelector(".toggle");
+      const message = document.getElementById("message");
+      isSignup = !isSignup;
+      message.textContent = "";
+      if (isSignup) {
+        title.textContent = "Create your account to get personalized fertilizer recommendations.";
+        button.textContent = "Sign Up";
+        toggleText.textContent = "Login here";
+      } else {
+        title.textContent = "Login to your account to access personalized recommendations.";
+        button.textContent = "Login";
+        toggleText.textContent = "Create one";
+      }
+    }
+
+    // Handle Signup/Login
+    function handleSubmit() {
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const message = document.getElementById("message");
+
+      if (!email.endsWith("@gmail.com")) {
+        message.style.color = "red";
+        message.textContent = "Please enter a valid Gmail address.";
+        return;
+      }
+      if (phone.length < 10 || isNaN(phone)) {
+        message.style.color = "red";
+        message.textContent = "Please enter a valid phone number.";
+        return;
+      }
+
+      if (isSignup) {
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("userPhone", phone);
+        message.style.color = "green";
+        message.textContent = "Signup successful! You can now login.";
+        document.getElementById("email").value = "";
+        document.getElementById("phone").value = "";
+      } else {
+        const savedEmail = localStorage.getItem("userEmail");
+        const savedPhone = localStorage.getItem("userPhone");
+        if (email === savedEmail && phone === savedPhone) {
+          message.style.color = "green";
+          message.textContent = "Login successfull! Welcome To Your Smrt Fertilizer System";
+          setTimeout(() => {
+            document.getElementById("loginPage").classList.add("hidden");
+            document.getElementById("mainPage").classList.remove("hidden");
+          }, 1000);
+        } else {
+          message.style.color = "red";
+          message.textContent = "Incorrect email or phone number.";
+        }
+      }
+    }
+
+    // Logout Function
+    function logout() {
+      localStorage.removeItem("chatData");
+      document.getElementById("mainPage").classList.add("hidden");
+      document.getElementById("loginPage").classList.remove("hidden");
+    }
+
+    // Fertilizer Recommendation
+    function recommend() {
+      const n = parseFloat(document.getElementById('n').value);
+      const p = parseFloat(document.getElementById('p').value);
+      const k = parseFloat(document.getElementById('k').value);
+      const ph = parseFloat(document.getElementById('ph').value);
+      const soil = document.getElementById('soil').value;
+      const temp = document.getElementById('temp').value;
+      const humidity = document.getElementById('humidity').value;
+
+      if (ph < 0 || isNaN(ph)) {
+        alert("Please enter a valid pH (0 or greater).");
+        return;
+      }
+
+      let fertilizer = "DAP";
+      if (n < 50) fertilizer = "Urea (Nitrogen-rich)";
+      else if (p < 50) fertilizer = "Single Super Phosphate (SSP)";
+      else if (k < 50) fertilizer = "Muriate of Potash (MOP)";
+      else if (ph < 6.5) fertilizer = "Dolomite Lime";
+      else if (soil === "black") fertilizer = "Ammonium Sulphate";
+      else if (soil === "sandy") fertilizer = "Compost or Organic Manure";
+
+      const resultText = `<b>Recommended Fertilizer:</b> ${fertilizer}<br>
+        <b>Reason:</b> Based on soil type (${soil}), pH ${ph}, and nutrient balance.`;
+
+      document.getElementById('result').innerHTML = resultText;
+
+      dataset.push({ temp, humidity, ph, n, p, k, soil, fertilizer });
+      localStorage.setItem("fertilizerData", JSON.stringify(dataset));
+      document.getElementById('datasetInfo').innerText = `Saved ${dataset.length} entries in dataset.`;
+    }
+
+    // Chatbot Functionality (same multilingual logic)
+    function sendMessage() {
+      const input = document.getElementById('userInput');
+      const msg = input.value.trim();
+      const lang = document.getElementById('langSelect').value;
+      if (!msg) return;
+      appendMessage('user', msg);
+      input.value = '';
+
+      let reply = "";
+      const lower = msg.toLowerCase();
+
+      if (lower.includes("fertilizer") || msg.includes("खाद")) {
+        reply = getTranslation("The best fertilizer is Urea or DAP depending on your soil.", lang);
+      } else if (lower.includes("ph")) {
+        reply = getTranslation("If pH is below 6.5, use Dolomite Lime. For high pH, use Sulfur.", lang);
+      } else if (lower.includes("rain") || msg.includes("बारिश")) {
+        reply = getTranslation("Reduce nitrogen fertilizers during heavy rainfall.", lang);
+      } else if (lower.includes("soil")) {
+        reply = getTranslation("Clay and loamy soils retain nutrients well, sandy soils need organic compost.", lang);
+      } else if (lower.includes("thank")) {
+        reply = getTranslation("You're welcome! Happy farming!", lang);
+      } else if (lower.includes("hello") || msg.includes("नमस्ते")) {
+        reply = getTranslation("Hello! How can I assist you with your crops today?", lang);
+      } else {
+        reply = getTranslation("I can guide you about fertilizers, soil, rainfall, and pH in your language!", lang);
+      }
+
+      appendMessage('bot', reply);
+      speak(reply, lang);
+
+      let chats = JSON.parse(localStorage.getItem("chatData")) || [];
+      chats.push({ role: 'user', msg }, { role: 'bot', reply });
+      localStorage.setItem("chatData", JSON.stringify(chats));
+    }
+
+    function appendMessage(sender, text) {
+      const chatbot = document.getElementById('chatbot');
+      const div = document.createElement('div');
+      div.classList.add('message', sender);
+      div.innerText = text;
+      chatbot.appendChild(div);
+      chatbot.scrollTop = chatbot.scrollHeight;
+    }
+
+    function startVoice() {
+      const lang = document.getElementById('langSelect').value;
+      const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = lang;
+      recognition.start();
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('userInput').value = transcript;
+        sendMessage();
+      }
+    }
+
+    function speak(text, lang) {
+      const synth = window.speechSynthesis;
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = lang;
+      synth.speak(utter);
+    }
+
+    function getTranslation(text, lang) {
+      const translations = {
+        "en-IN": {
+          "The best fertilizer is Urea or DAP depending on your soil.": "The best fertilizer is Urea or DAP depending on your soil.",
+          "If pH is below 6.5, use Dolomite Lime. For high pH, use Sulfur.": "If pH is below 6.5, use Dolomite Lime. For high pH, use Sulfur.",
+          "Reduce nitrogen fertilizers during heavy rainfall.": "Reduce nitrogen fertilizers during heavy rainfall.",
+          "Clay and loamy soils retain nutrients well, sandy soils need organic compost.": "Clay and loamy soils retain nutrients well, while sandy soils need organic compost.",
+          "You're welcome! Happy farming!": "You're welcome! Happy farming!",
+          "Hello! How can I assist you with your crops today?": "Hello! How can I assist you with your crops today?",
+          "I can guide you about fertilizers, soil, rainfall, and pH in your language!": "I can guide you about fertilizers, soil, rainfall, and pH in your language!"
+        },
+        "hi-IN": {
+          "The best fertilizer is Urea or DAP depending on your soil.": "आपकी मिट्टी के अनुसार सबसे अच्छी खाद यूरिया या डीएपी है।",
+          "If pH is below 6.5, use Dolomite Lime. For high pH, use Sulfur.": "अगर pH 6.5 से कम है तो डोलोमाइट लाइम और ज्यादा होने पर सल्फर का उपयोग करें।",
+          "Reduce nitrogen fertilizers during heavy rainfall.": "अधिक वर्षा  में नाइट्रोजन खाद का उपयोग कम करें।",
+          "Clay and loamy soils retain nutrients well, sandy soils need organic compost.": "चिकनी और दोमट मिट्टी पोषक तत्वों को अच्छी तरह से बनाए रखती है, रेतीली मिट्टी में जैविक खाद की आवश्यकता होती है।",
+          "You're welcome! Happy farming!": "आपका स्वागत है! खुशहाल खेती करें!",
+          "Hello! How can I assist you with your crops today?": "नमस्ते! मैं आज आपकी फसलों में कैसे मदद कर सकता हूँ?",
+          "I can guide you about fertilizers, soil, rainfall, and pH in your language!": "मैं खाद, मिट्टी, वर्षा और pH के बारे में आपकी भाषा में मार्गदर्शन कर सकता हूँ!"
+        },
+        "kn-IN": {
+          "The best fertilizer is Urea or DAP depending on your soil.": "ನಿಮ್ಮ ಮಣ್ಣಿನ ಆಧಾರದ ಮೇಲೆ ಉತ್ತಮ ರಸಗೊಬ್ಬರ ಯೂರಿಯಾ ಅಥವಾ DAP ಆಗಿದೆ.",
+          "If pH is below 6.5, use Dolomite Lime. For high pH, use Sulfur.": "pH 6.5 ಕ್ಕಿಂತ ಕಡಿಮೆ ಇದ್ದರೆ ಡೋಲೊಮೈಟ್ ಲೈಮ್ ಬಳಸಿ. ಹೆಚ್ಚು pH ಗೆ ಗಂಧಕ ಬಳಸಿ.",
+          "Reduce nitrogen fertilizers during heavy rainfall.": "ಭಾರಿ ಮಳೆಗೆ ನೈಟ್ರೋಜನ್ ರಸಗೊಬ್ಬರವನ್ನು ಕಡಿಮೆ ಮಾಡಿ.",
+          "Clay and loamy soils retain nutrients well, sandy soils need organic compost.": "ಮಣ್ಣಿನ ಮಣ್ಣಿನಲ್ಲಿ ಪೋಷಕಾಂಶಗಳು ಉಳಿಯುತ್ತವೆ, ಮರಳು ಮಣ್ಣಿಗೆ ಸಾವಯವ ಕಂಪೋಸ್ಟ್ ಅಗತ್ಯವಿದೆ.",
+          "You're welcome! Happy farming!": "ಸ್ವಾಗತ! ಸುಖದ ಕೃಷಿ ಮಾಡಿ!",
+          "Hello! How can I assist you with your crops today?": "ಹಲೋ! ನಾನು ಇಂದು ನಿಮ್ಮ ಬೆಳೆಗಳಿಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?",
+          "I can guide you about fertilizers, soil, rainfall, and pH in your language!": "ನಾನು ರಸಗೊಬ್ಬರ, ಮಣ್ಣು, ಮಳೆ ಮತ್ತು pH ಬಗ್ಗೆ ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ತಿಳಿಸಬಹುದು!"
+        },
+        "ta-IN": {
+          "The best fertilizer is Urea or DAP depending on your soil.": "உங்கள் மண்ணின் அடிப்படையில் சிறந்த உரம் யூரியா அல்லது DAP ஆகும்.",
+          "If pH is below 6.5, use Dolomite Lime. For high pH, use Sulfur.": "pH 6.5 க்கும் குறைவாக இருந்தால் டோலமைட் சுண்ணாம்பு பயன்படுத்தவும். அதிக pH க்கு சல்பர் பயன்படுத்தவும்.",
+          "Reduce nitrogen fertilizers during heavy rainfall.": "அதிக மழையில் நைட்ரஜன் உரங்களின் பயன்பாட்டை குறைக்கவும்.",
+          "Clay and loamy soils retain nutrients well, sandy soils need organic compost.": "சமநிலையான மற்றும் களிமண் மண் சத்துக்களை நன்றாக தக்கவைக்கிறது, மணல் மண்ணுக்கு உயிரி உரம் தேவை.",
+          "You're welcome! Happy farming!": "உங்களை வரவேற்கிறோம்! மகிழ்ச்சியான விவசாயம் செய்யுங்கள்!",
+          "Hello! How can I assist you with your crops today?": "வணக்கம்! இன்று உங்கள் பயிர்களுக்கு எப்படி உதவலாம்?",
+          "I can guide you about fertilizers, soil, rainfall, and pH in your language!": "உங்கள் மொழியில் உரம், மண், மழை மற்றும் pH பற்றி வழிகாட்டலாம்!"
+        },
+        "te-IN": {
+          "The best fertilizer is Urea or DAP depending on your soil.": "మీ మట్టి ఆధారంగా ఉత్తమ ఎరువు యూరియా లేదా DAP అవుతుంది.",
+          "If pH is below 6.5, use Dolomite Lime. For high pH, use Sulfur.": "pH 6.5 కంటే తక్కువగా ఉంటే డోలోమైట్ లైమ్ ఉపయోగించండి. అధిక pH కోసం సల్ఫర్ ఉపయోగించండి.",
+          "Reduce nitrogen fertilizers during heavy rainfall.": "భారీ వర్షపాతం సమయంలో నైట్రోజన్ ఎరువులను తగ్గించండి.",
+          "Clay and loamy soils retain nutrients well, sandy soils need organic compost.": "మట్టి మరియు లోమి నేల పోషకాలను బాగా నిలుపుకుంటుంది, ఇసుక నేలకి సేంద్రీయ ఎరువు అవసరం.",
+          "You're welcome! Happy farming!": "మీకు స్వాగతం! సంతోషంగా వ్యవసాయం చేయండి!",
+          "Hello! How can I assist you with your crops today?": "హలో! ఈరోజు మీ పంటలకు నేను ఎలా సహాయం చేయగలను?",
+          "I can guide you about fertilizers, soil, rainfall, and pH in your language!": "నేను మీ భాషలో ఎరువులు, నేల, వర్షపాతం మరియు pH గురించి మార్గనిర్దేశం చేయగలను!"
+        }
+      };
+      return translations[lang]?.[text] || text;
+    }
+  </script>
+
+</body>
+</html>
