@@ -1,0 +1,192 @@
+import pandas as pd
+
+# Load dataset
+data = pd.read_csv("/content/fertilizer_recommendation_dataset.csv")  # Replace with your actual file path
+
+# Inspect first few rows
+print(data.head())
+print(data.columns)
+
+
+from sklearn.preprocessing import LabelEncoder
+
+le_soil = LabelEncoder()
+data['Soil'] = le_soil.fit_transform(data['Soil'])
+
+le_crop = LabelEncoder()
+data['Crop'] = le_crop.fit_transform(data['Crop'])
+
+le_fert = LabelEncoder()
+data['Fertilizer'] = le_fert.fit_transform(data['Fertilizer'])
+
+from sklearn.model_selection import train_test_split
+
+# Features
+X = data[['Temperature','Moisture','Rainfall','PH','Nitrogen','Phosphorous','Potassium','Carbon','Soil','Crop']]
+
+# Labels
+y = data['Fertilizer']
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+clf = RandomForestClassifier()
+clf.fit(X_train, y_train)
+
+y_pred = clf.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+
+import pandas as pd
+
+def predict_fertilizer(temp, moisture, rainfall, ph, n, p, k, carbon, soil_type, crop_name):
+    soil_encoded = le_soil.transform([soil_type])[0]
+    crop_encoded = le_crop.transform([crop_name])[0]
+
+    # Create a DataFrame with the same feature names as the training data
+    input_data = pd.DataFrame([[temp, moisture, rainfall, ph, n, p, k, carbon, soil_encoded, crop_encoded]],
+                              columns=['Temperature','Moisture','Rainfall','PH','Nitrogen','Phosphorous','Potassium','Carbon','Soil','Crop'])
+
+    fert_encoded = clf.predict(input_data)[0]
+    fert_name = le_fert.inverse_transform([fert_encoded])[0]
+
+    return fert_name
+
+# Example
+fert = predict_fertilizer(23, 0.68, 259, 7.38, 75, 62, 80, 1.79, 'Peaty Soil', 'rice')
+print("Recommended Fertilizer:", fert)
+
+import pandas as pd
+
+def predict_fertilizer(temp, moisture, rainfall, ph, n, p, k, carbon, soil_type, crop_name):
+    soil_encoded = le_soil.transform([soil_type])[0]
+    crop_encoded = le_crop.transform([crop_name])[0]
+
+    # Create a DataFrame with the same feature names as the training data
+    input_data = pd.DataFrame([[temp, moisture, rainfall, ph, n, p, k, carbon, soil_encoded, crop_encoded]],
+                              columns=['Temperature','Moisture','Rainfall','PH','Nitrogen','Phosphorous','Potassium','Carbon','Soil','Crop'])
+
+    fert_encoded = clf.predict(input_data)[0]
+    fert_name = le_fert.inverse_transform([fert_encoded])[0]
+
+    return fert_name
+
+# Example
+fert = predict_fertilizer(23, 0.68, 259, 7.38, 75, 62, 80, 1.79, 'Peaty Soil', 'rice')
+print("Recommended Fertilizer:", fert)
+
+import pandas as pd
+
+def predict_fertilizer(temp, moisture, rainfall, ph, n, p, k, carbon, soil_type, crop_name):
+    # Convert input strings to lowercase to match the training data
+    soil_type_lower = soil_type.lower()
+    crop_name_lower = crop_name.lower()
+
+    # Find the closest match in the training data's soil types (case-insensitive)
+    try:
+        soil_encoded = le_soil.transform([soil_type])[0]
+    except ValueError:
+        # If the exact case-insensitive match is not found, try to find a close match
+        closest_soil = next((s for s in le_soil.classes_ if s.lower() == soil_type_lower), None)
+        if closest_soil:
+            soil_encoded = le_soil.transform([closest_soil])[0]
+        else:
+            return "Error: Soil type not recognized."
+
+    # Find the closest match in the training data's crop types (case-insensitive)
+    try:
+        crop_encoded = le_crop.transform([crop_name])[0]
+    except ValueError:
+        # If the exact case-insensitive match is not found, try to find a close match
+        closest_crop = next((c for c in le_crop.classes_ if c.lower() == crop_name_lower), None)
+        if closest_crop:
+            crop_encoded = le_crop.transform([closest_crop])[0]
+        else:
+            return "Error: Crop name not recognized."
+
+
+    # Create a DataFrame with the same feature names as the training data
+    input_data = pd.DataFrame([[temp, moisture, rainfall, ph, n, p, k, carbon, soil_encoded, crop_encoded]],
+                              columns=['Temperature','Moisture','Rainfall','PH','Nitrogen','Phosphorous','Potassium','Carbon','Soil','Crop'])
+
+    fert_encoded = clf.predict(input_data)[0]
+    fert_name = le_fert.inverse_transform([fert_encoded])[0]
+
+    return fert_name
+
+# Get input from user
+temp = float(input("Enter Temperature: "))
+moisture = float(input("Enter Moisture: "))
+rainfall = float(input("Enter Rainfall: "))
+ph = float(input("Enter PH: "))
+n = float(input("Enter Nitrogen: "))
+p = float(input("Enter Phosphorous: "))
+k = float(input("Enter Potassium: "))
+carbon = float(input("Enter Carbon: "))
+soil_type = input("Enter Soil Type: ")
+crop_name = input("Enter Crop Name: ")
+
+# Predict and print the recommended fertilizer
+fert = predict_fertilizer(temp, moisture, rainfall, ph, n, p, k, carbon, soil_type, crop_name)
+print("Recommended Fertilizer:", fert)
+
+import joblib
+
+# Save trained model and encoders
+joblib.dump(clf, 'fertilizer_model.pkl')
+joblib.dump(le_soil, 'le_soil.pkl')
+joblib.dump(le_crop, 'le_crop.pkl')
+joblib.dump(le_fert, 'le_fert.pkl')
+
+from google.colab import files
+files.download('fertilizer_model.pkl')
+files.download('le_soil.pkl')
+files.download('le_crop.pkl')
+files.download('le_fert.pkl')
+
+# Step 1: Import Libraries
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import joblib
+
+# Step 2: Load Your Dataset
+data = pd.read_csv("/content/fertilizer_recommendation_dataset.csv")  # Replace with your file path
+
+# Step 3: Encode Categorical Columns
+le_soil = LabelEncoder()
+le_crop = LabelEncoder()
+le_fert = LabelEncoder()
+
+data['Soil'] = le_soil.fit_transform(data['Soil'])
+data['Crop'] = le_crop.fit_transform(data['Crop'])
+data['Fertilizer'] = le_fert.fit_transform(data['Fertilizer'])
+
+# Step 4: Features and Target
+X = data[['Temperature','Moisture','Rainfall','PH','Nitrogen','Phosphorous','Potassium','Carbon','Soil','Crop']]
+y = data['Fertilizer']
+
+# Step 5: Train-Test Split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 6: Train Random Forest Model
+clf = RandomForestClassifier()
+clf.fit(X_train, y_train)
+
+# Step 7: Save Model and Encoders as .pkl
+joblib.dump(clf, 'fertilizer_model.pkl')
+joblib.dump(le_soil, 'le_soil.pkl')
+joblib.dump(le_crop, 'le_crop.pkl')
+joblib.dump(le_fert, 'le_fert.pkl')
+
+print("✅ All .pkl files created successfully!")
+
+from google.colab import files
+files.download('fertilizer_model.pkl')
+files.download('le_soil.pkl')
+files.download('le_crop.pkl')
+files.download('le_fert.pkl')
